@@ -19,10 +19,6 @@ app.use(cors({
 }))
 app.use(router)
 
-app.get('/', function (req, res) {
-    log('Recived get request')
-    res.send('hello world')
-})
 function herokuAntiSleep() {
     const port = config.PORT 
     const herokuhost = config.HEROKU_HOST

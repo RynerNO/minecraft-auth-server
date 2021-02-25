@@ -8,7 +8,7 @@ import md5 from 'md5';
 import Bcrypt from 'bcryptjs';
 import { Token } from '@src/models/subDoc/Token';
 export async function login(req: Request, res: Response) {
-    const { email, password, clientToken } = req.body;
+    const { email, password } = req.body;
     log('Received Request', req.body)
     const user = await User.findOne({ email });
 
@@ -19,25 +19,29 @@ export async function login(req: Request, res: Response) {
       user.refreshToken()
       await user.save()
       return res.status(200).json({
-        id: user.uuid,
+        id: user.id,
         name: user.name,
         selectedProfile: {
-          id: user.uuid,
+          id: uniqid(),
           name: user.name,
+          userId: user.id,
+          createdAt: user.createdAt.getTime(),
+          legacyProfile: false,
+          suspended: false,
+          paid: false,
+          migrated: false,
           legacy: false
         },
         userProperties: user.userProperties,
-        token: user.token.value,
-        accessToken: user.token.value,
-        clientToken: clientToken,
-        avaliableProfiles: {},
-        
+        token: user.token.value
       });
+    
+
 
 
 }
 export async function register(req: Request, res: Response) {
-    const { name, email, password, clientToken } = req.body;
+    const { name, email, password }: {name: string, email: string, password: string} = req.body;
     log('Received Request', req.body)
     const user = await User.create({
         name: name, 
@@ -52,19 +56,15 @@ export async function register(req: Request, res: Response) {
     user.generateToken();
     await user.save()
     return res.status(201).json({
-      id: user.uuid,
+      id: user.id,
       name: user.name,
       userProperties: user.userProperties,
-      token: user.token.value,
-      accessToken: user.token.value,
-      clientToken: clientToken,
-      avaliableProfiles: {},
-      
+      token: user.token.value
     });
 }
 
 export async function verify(req: Request, res: Response) {
-  const { accessToken, clientToken } = req.body;
+  const { accessToken }: {accessToken: string} = req.body;
   log('Received Request', req.body)
   const data: any = jwt.verify(accessToken, config.JWT_SECRET);
   if(!data.expireAt || Token.isExpired(new Date(data.expireAt))) return res.status(401).send()
@@ -76,13 +76,10 @@ export async function verify(req: Request, res: Response) {
   user.refreshToken()
   await user.save()
   return res.status(200).json({
-    id: user.uuid,
+    id: user.id,
     name: user.name,
     userProperties: user.userProperties,
-    token: user.token.value,
-    accessToken: user.token.value,
-    clientToken: clientToken,
-    avaliableProfiles: {},
+    token: user.token.value
   });
 }
 export async function join(req: Request, res: Response) {
@@ -98,7 +95,7 @@ export async function join(req: Request, res: Response) {
     if(!user.uuid) user.uuid = md5(user.name);
     user.refreshToken()
     user.save()
-    res.send()
+    res.status(204).send()
    
 
 }
