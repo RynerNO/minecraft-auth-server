@@ -33,16 +33,18 @@ export async function join(req: Request, res: Response) {
 export async function hasJoined(req: Request, res: Response) {
 	try {
 		const { name, serverId } = req.body;
+		log(req.body);
 		const user = await User.findOne({
 			name: name,
 		});
 
 		if (user) {
 			res.json({
-				uuid: user.uuid,
+				id: user.uuid,
 				name: user.name,
 			});
 		} else res.status(400).send();
+		log('User:', user);
 	} catch (e) {
 		log('Error: ', e);
 	}
