@@ -5,6 +5,5 @@ import validator from '@src/validators/minecraft'
 const router = Router();
 
 router.post('/join', validator.join, controller.join)
-router.get('/hasJoined', validator.serverVerify, controller.serverVerify)
-router.post('/hasJoined', validator.verify, controller.verify)
+router.get('/hasJoined', validator.hasJoined, controller.hasJoined)
 export default router;
