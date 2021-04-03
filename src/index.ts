@@ -26,8 +26,12 @@ app.use(router);
 
 function herokuAntiSleep() {
 	const herokuhost = config.HEROKU_HOST;
-	setInterval(() => {
-		axios.get(`${herokuhost}`);
+	setInterval(async () => {
+		try {
+			axios.get(`${herokuhost}`);
+		} catch (e) {
+			log('Error:', e);
+		}
 	}, 1200000);
 }
 

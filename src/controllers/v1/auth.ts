@@ -17,7 +17,7 @@ export async function login(req: Request, res: Response) {
 		const user = await User.findOne({ email });
 
 		if (!user || !user.comparePasswords(password)) {
-			return res.status(400).json({ message: 'Неверный логин или пароль' });
+			return res.status(200).json({ status: 'Error', message: 'Неверный логин или пароль' });
 		}
 		user.refreshToken();
 		await user.save();
@@ -28,6 +28,7 @@ export async function login(req: Request, res: Response) {
 		});
 	} catch (e) {
 		log('Error: ', e);
+		res.status(400).json({});
 	}
 }
 export async function register(req: Request, res: Response) {
@@ -52,17 +53,22 @@ export async function register(req: Request, res: Response) {
 		});
 	} catch (e) {
 		log('Error: ', e);
+		res.status(400).json({});
 	}
 }
 
 export async function verify(req: Request, res: Response) {
 	try {
 		const { accessToken } = req.body;
+
 		log('Received Request', req.body);
 		const data: any = jwt.verify(accessToken, config.JWT_SECRET);
-		if (!data.expireAt || Token.isExpired(new Date(data.expireAt)))
-			return res.status(401).json({});
+
+		if (!data.expireAt || Token.isExpired(new Date(data.expireAt))) return res.status(401).json({});
 		const user = await User.findById(data.id);
+		// User cant have more than one token
+		if (accessToken !== user.accessToken.value) return res.status(401).json({});
+
 		if (!user) {
 			return res.status(401).json({});
 		}
@@ -76,6 +82,7 @@ export async function verify(req: Request, res: Response) {
 		});
 	} catch (e) {
 		log('Error: ', e);
+		res.status(400).json({});
 	}
 }
 

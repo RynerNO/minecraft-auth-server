@@ -3,6 +3,7 @@ import User from '@src/models/User';
 import va from 'validator';
 import { getLogger } from '@src/helpers';
 const log = getLogger('Validators');
+import ErrorMessages from '../ErrorMessages';
 export async function register(req: Request, res: Response, next: NextFunction) {
 	try {
 		const {
@@ -26,10 +27,9 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 			})
 		) {
 			return res.status(400).json({
-				type: 'Error',
+				status: 'Error',
 				reason: {
 					email: !va.isEmail(email),
-
 					username:
 						!va.isLength(name, {
 							min: 3,
@@ -46,19 +46,19 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 			name: name,
 		});
 		const testEmail = await User.findOne({ email: email });
-		if (testUsername || testEmail)
-			return res.status(400).json({
-				type: 'Error',
-				reason: {
-					email: !!testEmail,
-					username: !!testUsername,
-					password: false,
-				},
-			});
+		if (testUsername || testEmail) {
+			let errorMessage = testUsername ? ErrorMessages.NAME_ALREADY_EXISTS : ErrorMessages.EMAIL_ALREADY_EXISTS;
+			errorMessage = testUsername && testEmail ? ErrorMessages.EMAIL_AND_NAME_ALREADY_EXISTS : errorMessage;
 
+			return res.status(200).json({
+				status: 'Error',
+				message: errorMessage,
+			});
+		}
 		next();
 	} catch (e) {
 		log('Error: ', e);
+		res.status(400).json({});
 	}
 }
 
@@ -73,7 +73,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 		} = req.body;
 		if (!va.isEmail(email) || va.isEmpty(password)) {
 			return res.status(400).json({
-				type: 'Error',
+				status: 'Error',
 				reason: {
 					email: !va.isEmail(email),
 					password: va.isEmpty(password),
@@ -83,6 +83,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 		next();
 	} catch (e) {
 		log('Error: ', e);
+		res.status(400).json({});
 	}
 }
 
@@ -95,6 +96,7 @@ export async function verify(req: Request, res: Response, next: NextFunction) {
 		return next();
 	} catch (e) {
 		log('Error: ', e);
+		res.status(400).json({});
 	}
 }
 export default {

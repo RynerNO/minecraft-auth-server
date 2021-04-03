@@ -11,6 +11,7 @@ export async function join(req: Request, res: Response, next: NextFunction) {
 		return next();
 	} catch (e) {
 		log('Error: ', e);
+		res.status(400).json({});
 	}
 }
 export async function hasJoined(req: Request, res: Response, next: NextFunction) {
@@ -27,6 +28,7 @@ export async function hasJoined(req: Request, res: Response, next: NextFunction)
 		return next();
 	} catch (e) {
 		log('Error: ', e);
+		res.status(400).json({});
 	}
 }
 export default {
